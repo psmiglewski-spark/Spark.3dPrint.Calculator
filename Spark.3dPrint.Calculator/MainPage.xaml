@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:Spark._3dPrint.Calculator.ViewModels"
+             x:Class="Spark._3dPrint.Calculator.MainPage"
+             x:DataType="viewmodels:MainViewModel"
+             Title="Kalkulator kosztow wydruku 3D">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Ustawienia" 
+                     Command="{Binding NavigateToSettingsCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <Label Text="Kalkulator kosztow wydruku 3D" 
+                   FontSize="24" 
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center"
+                   Margin="0,0,0,20"/>
+
+            <!-- Rodzaj filamentu -->
+            <Label Text="Rodzaj filamentu:" FontAttributes="Bold"/>
+            <Picker ItemsSource="{Binding Filaments}"
+                    SelectedItem="{Binding SelectedFilament}"
+                    Title="Wybierz filament">
+                <Picker.ItemDisplayBinding>
+                    <Binding Path="Type" />
+                </Picker.ItemDisplayBinding>
+            </Picker>
+
+            <!-- Waga filamentu -->
+            <Label Text="Waga filamentu (g):" FontAttributes="Bold"/>
+            <Entry Placeholder="Podaj wage w gramach"
+                   Keyboard="Numeric"
+                   Text="{Binding FilamentWeight}"/>
+
+            <!-- Czas druku -->
+            <Label Text="Czas druku (godziny):" FontAttributes="Bold"/>
+            <Entry Placeholder="Podaj czas w godzinach"
+                   Keyboard="Numeric"
+                   Text="{Binding PrintTimeHours}"/>
+
+            <!-- Ilosc elementow -->
+            <Label Text="Ilosc elementow na stole:" FontAttributes="Bold"/>
+            <Entry Placeholder="Liczba elementow"
+                   Keyboard="Numeric"
+                   Text="{Binding Quantity}"/>
+
+            <!-- Przycisk oblicz -->
+            <Button Text="Oblicz koszt"
+                    Command="{Binding CalculateCommand}"
+                    BackgroundColor="#512BD4"
+                    TextColor="White"
+                    Margin="0,20,0,0"
+                    HeightRequest="50"/>
+
+            <!-- Wyniki -->
+            <Frame BorderColor="#512BD4" 
+                   Padding="15"
+                   Margin="0,20,0,0"
+                   IsVisible="{Binding TotalCost, Converter={StaticResource IsNotZeroConverter}}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Wyniki:" 
+                           FontSize="18" 
+                           FontAttributes="Bold"/>
+
+                    <Grid ColumnDefinitions="*,Auto" RowSpacing="5">
+                        <!--<Label Text="Koszt calkowity:" Grid.Row="0" Grid.Column="0"/>
+                        <Label Text="{Binding TotalCost, StringFormat='{0:F2} zl'}" 
+                               Grid.Row="0" Grid.Column="1"
+                               FontAttributes="Bold"/>-->
+
+                        <Label Text="Koszt na sztuke:" Grid.Row="1" Grid.Column="0"/>
+                        <Label Text="{Binding CostPerPiece, StringFormat='{0:F2} zl'}" 
+                               Grid.Row="1" Grid.Column="1"
+                               FontAttributes="Bold"
+                               TextColor="#512BD4"
+                               FontSize="18"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
