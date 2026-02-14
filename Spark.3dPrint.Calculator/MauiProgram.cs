@@ -23,6 +23,7 @@ namespace Spark._3dPrint.Calculator
             // Rejestracja serwisow
             builder.Services.AddSingleton<AppDbContext>();
             builder.Services.AddSingleton<CostCalculationService>();
+            builder.Services.AddHttpClient<OnlineFilamentCatalogService>();
             builder.Services.AddSingleton<IsNotZeroConverter>();
 
             // Rejestracja ViewModels
