@@ -5,18 +5,22 @@ namespace Spark._3dPrint.Calculator.Services
     public class CostCalculationService
     {
         public decimal CalculateTotalCost(
-            decimal filamentWeight, 
-            decimal printTime, 
-            Filament filament, 
-            PrinterSettings settings)
+            decimal filamentWeight,
+            decimal printTime,
+            Filament filament,
+            PrinterSettings settings,
+            IEnumerable<ExternalMaterial>? externalMaterials,
+            decimal discountPercent)
         {
-            // Koszt filamentu: (waga w gramach / 1000) * (cena szpuli / waga szpuli w kg)
             decimal filamentCost = (filamentWeight / 1000m) * (filament.SpoolPrice / (filament.SpoolWeight / 1000m));
-
-            // Koszt energii: (moc w W / 1000) * czas w h * koszt za kWh
             decimal energyCost = (settings.PrinterPower / 1000m) * printTime * settings.ElectricityCost;
+            decimal externalCost = externalMaterials?.Sum(x => x.TotalPrice) ?? 0m;
 
-            return filamentCost + energyCost;
+            decimal subtotal = filamentCost + energyCost + externalCost;
+            decimal normalizedDiscount = Math.Clamp(discountPercent, 0m, 100m);
+            decimal discountValue = subtotal * (normalizedDiscount / 100m);
+
+            return subtotal - discountValue;
         }
 
         public decimal CalculateCostPerPiece(decimal totalCost, int quantity)

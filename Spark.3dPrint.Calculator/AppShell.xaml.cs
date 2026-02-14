@@ -1,4 +1,4 @@
-﻿namespace Spark._3dPrint.Calculator
+namespace Spark._3dPrint.Calculator
 {
     public partial class AppShell : Shell
     {
@@ -6,6 +6,7 @@
         {
             InitializeComponent();
             Routing.RegisterRoute("SettingsPage", typeof(Views.SettingsPage));
+            Routing.RegisterRoute("ArchivePage", typeof(Views.ArchivePage));
         }
     }
 }
