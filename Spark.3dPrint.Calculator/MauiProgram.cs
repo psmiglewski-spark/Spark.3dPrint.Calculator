@@ -28,10 +28,12 @@ namespace Spark._3dPrint.Calculator
             // Rejestracja ViewModels
             builder.Services.AddSingleton<MainViewModel>();
             builder.Services.AddTransient<SettingsViewModel>();
+            builder.Services.AddTransient<ArchiveViewModel>();
 
             // Rejestracja Views
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddTransient<SettingsPage>();
+            builder.Services.AddTransient<ArchivePage>();
 
 #if DEBUG
             builder.Logging.AddDebug();

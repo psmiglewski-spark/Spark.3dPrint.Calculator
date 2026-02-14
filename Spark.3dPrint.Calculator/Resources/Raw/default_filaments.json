@@ -1,0 +1,9 @@
+[
+  { "type": "PLA", "manufacturer": "Fiberlogy", "spoolPrice": 85.00, "spoolWeight": 1000 },
+  { "type": "PLA", "manufacturer": "Devil Design", "spoolPrice": 78.00, "spoolWeight": 1000 },
+  { "type": "PETG", "manufacturer": "Fiberlogy", "spoolPrice": 99.00, "spoolWeight": 1000 },
+  { "type": "PETG", "manufacturer": "Spectrum", "spoolPrice": 105.00, "spoolWeight": 1000 },
+  { "type": "ABS", "manufacturer": "Noctuo", "spoolPrice": 92.00, "spoolWeight": 1000 },
+  { "type": "ASA", "manufacturer": "Spectrum", "spoolPrice": 120.00, "spoolWeight": 1000 },
+  { "type": "TPU", "manufacturer": "Fiberlogy", "spoolPrice": 149.00, "spoolWeight": 850 }
+]

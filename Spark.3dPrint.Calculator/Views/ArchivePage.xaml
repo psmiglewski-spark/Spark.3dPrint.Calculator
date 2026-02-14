@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:Spark._3dPrint.Calculator.ViewModels"
+             xmlns:models="clr-namespace:Spark._3dPrint.Calculator.Models"
+             x:Class="Spark._3dPrint.Calculator.Views.ArchivePage"
+             x:DataType="viewmodels:ArchiveViewModel"
+             Title="Archiwum wycen">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+            <SearchBar Placeholder="Szukaj po projekcie lub filamencie"
+                       Text="{Binding SearchText}"/>
+
+            <Picker Title="Filtruj po filamencie"
+                    ItemsSource="{Binding FilamentFilters}"
+                    SelectedItem="{Binding SelectedFilamentFilter}"/>
+
+            <HorizontalStackLayout Spacing="10">
+                <CheckBox IsChecked="{Binding OnlyDiscounted}" />
+                <Label Text="Tylko wyceny z rabatem" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Odswiez" Command="{Binding RefreshCommand}" />
+                <Button Text="Wyczysc filtry" Command="{Binding ClearFiltersCommand}" />
+            </HorizontalStackLayout>
+
+            <CollectionView ItemsSource="{Binding Entries}" SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <Label Text="Brak zapisanych wycen dla aktualnych filtrow."
+                           HorizontalTextAlignment="Center"
+                           TextColor="Gray"
+                           Margin="0,20"/>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:QuoteArchiveEntry">
+                        <Frame BorderColor="LightGray" Padding="12" Margin="0,5">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding ProjectName}" FontAttributes="Bold" FontSize="16" />
+                                <Label Text="{Binding CreatedAt, StringFormat='Data: {0:yyyy-MM-dd HH:mm}'}" FontSize="12" TextColor="Gray" />
+                                <Label Text="{Binding FilamentType, StringFormat='Filament: {0}'}" />
+                                <Label Text="{Binding FilamentManufacturer, StringFormat='Producent: {0}'}" FontSize="12" />
+                                <Label Text="{Binding ExternalMaterialsCost, StringFormat='Materialy zewnetrzne: {0:F2} zl'}" FontSize="12" />
+                                <Label Text="{Binding DiscountPercent, StringFormat='Rabat: {0:F1}%'}" FontSize="12" />
+                                <Label Text="{Binding TotalCost, StringFormat='Koszt calkowity: {0:F2} zl'}" FontAttributes="Bold" />
+                                <Label Text="{Binding CostPerPiece, StringFormat='Koszt / szt.: {0:F2} zl'}" TextColor="#512BD4" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

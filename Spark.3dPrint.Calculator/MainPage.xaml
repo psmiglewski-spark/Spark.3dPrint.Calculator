@@ -1,54 +1,93 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:Spark._3dPrint.Calculator.ViewModels"
+             xmlns:models="clr-namespace:Spark._3dPrint.Calculator.Models"
              x:Class="Spark._3dPrint.Calculator.MainPage"
              x:DataType="viewmodels:MainViewModel"
              Title="Kalkulator kosztow wydruku 3D">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Ustawienia" 
+        <ToolbarItem Text="Archiwum"
+                     Command="{Binding NavigateToArchiveCommand}" />
+        <ToolbarItem Text="Ustawienia"
                      Command="{Binding NavigateToSettingsCommand}" />
     </ContentPage.ToolbarItems>
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
 
-            <Label Text="Kalkulator kosztow wydruku 3D" 
-                   FontSize="24" 
+            <Label Text="Kalkulator kosztow wydruku 3D"
+                   FontSize="24"
                    FontAttributes="Bold"
                    HorizontalTextAlignment="Center"
                    Margin="0,0,0,20"/>
 
-            <!-- Rodzaj filamentu -->
+            <Label Text="Nazwa projektu:" FontAttributes="Bold"/>
+            <Entry Placeholder="np. Uchwyt do kamery"
+                   Text="{Binding ProjectName}"/>
+
             <Label Text="Rodzaj filamentu:" FontAttributes="Bold"/>
             <Picker ItemsSource="{Binding Filaments}"
                     SelectedItem="{Binding SelectedFilament}"
                     Title="Wybierz filament">
                 <Picker.ItemDisplayBinding>
-                    <Binding Path="Type" />
+                    <Binding Path="DisplayName" />
                 </Picker.ItemDisplayBinding>
             </Picker>
 
-            <!-- Waga filamentu -->
             <Label Text="Waga filamentu (g):" FontAttributes="Bold"/>
             <Entry Placeholder="Podaj wage w gramach"
                    Keyboard="Numeric"
                    Text="{Binding FilamentWeight}"/>
 
-            <!-- Czas druku -->
             <Label Text="Czas druku (godziny):" FontAttributes="Bold"/>
             <Entry Placeholder="Podaj czas w godzinach"
                    Keyboard="Numeric"
                    Text="{Binding PrintTimeHours}"/>
 
-            <!-- Ilosc elementow -->
-            <Label Text="Ilosc elementow na stole:" FontAttributes="Bold"/>
+            <Label Text="Ilosc elementow:" FontAttributes="Bold"/>
             <Entry Placeholder="Liczba elementow"
                    Keyboard="Numeric"
                    Text="{Binding Quantity}"/>
 
-            <!-- Przycisk oblicz -->
+            <Label Text="Rabat (%):" FontAttributes="Bold"/>
+            <Entry Placeholder="np. 10"
+                   Keyboard="Numeric"
+                   Text="{Binding DiscountPercent}"/>
+
+            <Frame BorderColor="LightGray" Padding="12">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Materialy zewnetrzne" FontAttributes="Bold" />
+
+                    <CollectionView ItemsSource="{Binding ExternalMaterials}"
+                                    SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:ExternalMaterial">
+                                <Grid ColumnDefinitions="*,Auto,Auto" Padding="0,4">
+                                    <Label Text="{Binding Name}" Grid.Column="0" />
+                                    <Label Text="{Binding TotalPrice, StringFormat='{0:F2} zl'}" Grid.Column="1" Margin="10,0" />
+                                    <Button Text="Usun"
+                                            Grid.Column="2"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}, Path=RemoveExternalMaterialCommand}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="Transparent"
+                                            TextColor="Red" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <Button Text="Dodaj material zewnetrzny"
+                            Command="{Binding AddExternalMaterialCommand}" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <HorizontalStackLayout Spacing="10">
+                <CheckBox IsChecked="{Binding SaveToArchive}" />
+                <Label Text="Zapisz wycene do archiwum" VerticalOptions="Center"/>
+            </HorizontalStackLayout>
+
             <Button Text="Oblicz koszt"
                     Command="{Binding CalculateCommand}"
                     BackgroundColor="#512BD4"
@@ -56,25 +95,25 @@
                     Margin="0,20,0,0"
                     HeightRequest="50"/>
 
-            <!-- Wyniki -->
-            <Frame BorderColor="#512BD4" 
+            <Frame BorderColor="#512BD4"
                    Padding="15"
                    Margin="0,20,0,0"
                    IsVisible="{Binding TotalCost, Converter={StaticResource IsNotZeroConverter}}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Wyniki:" 
-                           FontSize="18" 
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Wyniki:"
+                           FontSize="18"
                            FontAttributes="Bold"/>
 
-                    <Grid ColumnDefinitions="*,Auto" RowSpacing="5">
-                        <!--<Label Text="Koszt calkowity:" Grid.Row="0" Grid.Column="0"/>
-                        <Label Text="{Binding TotalCost, StringFormat='{0:F2} zl'}" 
-                               Grid.Row="0" Grid.Column="1"
-                               FontAttributes="Bold"/>-->
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="5">
+                        <Label Text="Materialy zewnetrzne:" Grid.Row="0" Grid.Column="0"/>
+                        <Label Text="{Binding ExternalMaterialsCost, StringFormat='{0:F2} zl'}" Grid.Row="0" Grid.Column="1"/>
 
-                        <Label Text="Koszt na sztuke:" Grid.Row="1" Grid.Column="0"/>
-                        <Label Text="{Binding CostPerPiece, StringFormat='{0:F2} zl'}" 
-                               Grid.Row="1" Grid.Column="1"
+                        <Label Text="Koszt calkowity:" Grid.Row="1" Grid.Column="0"/>
+                        <Label Text="{Binding TotalCost, StringFormat='{0:F2} zl'}" Grid.Row="1" Grid.Column="1" FontAttributes="Bold"/>
+
+                        <Label Text="Koszt na sztuke:" Grid.Row="2" Grid.Column="0"/>
+                        <Label Text="{Binding CostPerPiece, StringFormat='{0:F2} zl'}"
+                               Grid.Row="2" Grid.Column="1"
                                FontAttributes="Bold"
                                TextColor="#512BD4"
                                FontSize="18"/>

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Spark._3dPrint.Calculator.Data;
 using Spark._3dPrint.Calculator.Models;
 using System.Collections.ObjectModel;
+using System.Text.Json;
 
 namespace Spark._3dPrint.Calculator.ViewModels
 {
@@ -27,7 +28,10 @@ namespace Spark._3dPrint.Calculator.ViewModels
 
         private void LoadData()
         {
-            var filamentList = _dbContext.Filaments.ToList();
+            var filamentList = _dbContext.Filaments
+                .OrderBy(x => x.Type)
+                .ThenBy(x => x.Manufacturer)
+                .ToList();
             Filaments = new ObservableCollection<Filament>(filamentList);
 
             var settings = _dbContext.PrinterSettings.FirstOrDefault();
@@ -52,6 +56,46 @@ namespace Spark._3dPrint.Calculator.ViewModels
         }
 
         [RelayCommand]
+        private async Task ImportFilamentsFromPackage()
+        {
+            using var stream = await FileSystem.OpenAppPackageFileAsync("default_filaments.json");
+            using var reader = new StreamReader(stream);
+            string json = await reader.ReadToEndAsync();
+
+            var imported = JsonSerializer.Deserialize<List<FilamentImportItem>>(json) ?? new List<FilamentImportItem>();
+            int added = 0;
+
+            foreach (var item in imported)
+            {
+                if (string.IsNullOrWhiteSpace(item.Type) || string.IsNullOrWhiteSpace(item.Manufacturer))
+                {
+                    continue;
+                }
+
+                bool exists = _dbContext.Filaments.Any(x => x.Type == item.Type && x.Manufacturer == item.Manufacturer);
+                if (exists)
+                {
+                    continue;
+                }
+
+                _dbContext.Filaments.Add(new Filament
+                {
+                    Type = item.Type,
+                    Manufacturer = item.Manufacturer,
+                    SpoolPrice = item.SpoolPrice,
+                    SpoolWeight = item.SpoolWeight <= 0 ? 1000 : item.SpoolWeight
+                });
+
+                added++;
+            }
+
+            await _dbContext.SaveChangesAsync();
+            LoadData();
+
+            await Shell.Current.DisplayAlert("Import filamentow", $"Dodano {added} nowych filamentow.", "OK");
+        }
+
+        [RelayCommand]
         private async Task AddFilament()
         {
             string type = await Shell.Current.DisplayPromptAsync("Nowy filament", "Rodzaj filamentu (np. PLA):");
@@ -73,7 +117,7 @@ namespace Spark._3dPrint.Calculator.ViewModels
 
             _dbContext.Filaments.Add(filament);
             await _dbContext.SaveChangesAsync();
-            Filaments.Add(filament);
+            LoadData();
 
             await Shell.Current.DisplayAlert("Sukces", "Filament dodany", "OK");
         }
@@ -81,15 +125,23 @@ namespace Spark._3dPrint.Calculator.ViewModels
         [RelayCommand]
         private async Task DeleteFilament(Filament filament)
         {
-            bool confirm = await Shell.Current.DisplayAlert("Potwierdzenie", 
+            bool confirm = await Shell.Current.DisplayAlert("Potwierdzenie",
                 $"Czy na pewno usunac {filament.Type}?", "Tak", "Nie");
-            
+
             if (confirm)
             {
                 _dbContext.Filaments.Remove(filament);
                 await _dbContext.SaveChangesAsync();
-                Filaments.Remove(filament);
+                LoadData();
             }
+        }
+
+        private class FilamentImportItem
+        {
+            public string Type { get; set; } = string.Empty;
+            public string Manufacturer { get; set; } = string.Empty;
+            public decimal SpoolPrice { get; set; }
+            public int SpoolWeight { get; set; } = 1000;
         }
     }
 }
