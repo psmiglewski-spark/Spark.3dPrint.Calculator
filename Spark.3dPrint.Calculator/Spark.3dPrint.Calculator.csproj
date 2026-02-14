@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net8.0-android;net8.0-ios;net8.0-maccatalyst</TargetFrameworks>
@@ -27,23 +27,12 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
-
+	</PropertyGroup>
 	
-
-		
-	</PropertyGroup>
-	<PropertyGroup>
-		<!-- ... inne właściwości ... -->
-		<WindowsPackageType>None</WindowsPackageType>
-	</PropertyGroup>
-	<!-- Android Release Configuration -->
-	<PropertyGroup Condition="'$(Configuration)' == 'Release' and $(TargetFramework.Contains('android'))">
-		<AndroidPackageFormat>apk</AndroidPackageFormat>
-		<RunAOTCompilation>false</RunAOTCompilation>
-		<PublishTrimmed>false</PublishTrimmed>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
+		<EnableLLVM>false</EnableLLVM>
 		<AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
-		<AndroidLinkMode>None</AndroidLinkMode>
-		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+		<RunAOTCompilation>false</RunAOTCompilation>
 	</PropertyGroup>
 
 	<ItemGroup>
