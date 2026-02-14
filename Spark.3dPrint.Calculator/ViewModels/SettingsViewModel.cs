@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Spark._3dPrint.Calculator.Data;
 using Spark._3dPrint.Calculator.Models;
+using Spark._3dPrint.Calculator.Services;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 
@@ -10,6 +11,7 @@ namespace Spark._3dPrint.Calculator.ViewModels
     public partial class SettingsViewModel : ObservableObject
     {
         private readonly AppDbContext _dbContext;
+        private readonly OnlineFilamentCatalogService _onlineFilamentCatalogService;
 
         [ObservableProperty]
         private ObservableCollection<Filament> filaments = new();
@@ -20,9 +22,10 @@ namespace Spark._3dPrint.Calculator.ViewModels
         [ObservableProperty]
         private decimal printerPower;
 
-        public SettingsViewModel(AppDbContext dbContext)
+        public SettingsViewModel(AppDbContext dbContext, OnlineFilamentCatalogService onlineFilamentCatalogService)
         {
             _dbContext = dbContext;
+            _onlineFilamentCatalogService = onlineFilamentCatalogService;
             LoadData();
         }
 
@@ -93,6 +96,59 @@ namespace Spark._3dPrint.Calculator.ViewModels
             LoadData();
 
             await Shell.Current.DisplayAlert("Import filamentow", $"Dodano {added} nowych filamentow.", "OK");
+        }
+
+        [RelayCommand]
+        private async Task SyncFilamentsFromInternet()
+        {
+            try
+            {
+                var onlineCatalog = await _onlineFilamentCatalogService.DownloadAveragedCatalogAsync();
+                if (onlineCatalog.Count == 0)
+                {
+                    await Shell.Current.DisplayAlert("Import internetowy", "Nie znaleziono danych filamentow.", "OK");
+                    return;
+                }
+
+                int added = 0;
+                int updated = 0;
+
+                foreach (var item in onlineCatalog)
+                {
+                    var existing = _dbContext.Filaments.FirstOrDefault(x => x.Type == item.Type && x.Manufacturer == item.Manufacturer);
+                    if (existing == null)
+                    {
+                        _dbContext.Filaments.Add(new Filament
+                        {
+                            Type = item.Type,
+                            Manufacturer = item.Manufacturer,
+                            SpoolPrice = item.AverageSpoolPrice,
+                            SpoolWeight = item.SpoolWeight
+                        });
+                        added++;
+                        continue;
+                    }
+
+                    existing.SpoolPrice = item.AverageSpoolPrice;
+                    existing.SpoolWeight = item.SpoolWeight;
+                    updated++;
+                }
+
+                await _dbContext.SaveChangesAsync();
+                LoadData();
+
+                await Shell.Current.DisplayAlert(
+                    "Import internetowy",
+                    $"Zaktualizowano ceny na podstawie wyszukanych ofert online (DuckDuckGo).\nDodane: {added}\nZaktualizowane: {updated}",
+                    "OK");
+            }
+            catch
+            {
+                await Shell.Current.DisplayAlert(
+                    "Import internetowy",
+                    "Nie udalo sie pobrac danych online. Sprawdz polaczenie z internetem i sproboj ponownie.",
+                    "OK");
+            }
         }
 
         [RelayCommand]

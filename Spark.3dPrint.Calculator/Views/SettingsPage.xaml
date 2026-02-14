@@ -42,6 +42,11 @@
                             BackgroundColor="#2E8B57"
                             TextColor="White"/>
 
+                    <Button Text="Pobierz liste filamentow i srednie ceny z internetu"
+                            Command="{Binding SyncFilamentsFromInternetCommand}"
+                            BackgroundColor="#1E88E5"
+                            TextColor="White"/>
+
                     <CollectionView ItemsSource="{Binding Filaments}"
                                     SelectionMode="None">
                         <CollectionView.ItemTemplate>
